@@ -70,7 +70,7 @@ class Field:
     def get_position(self, ship):
         inp = input(f'Введите через пробел координаты начала для {ship}-x палубного корабля, например Д7: ')
         x_str, *y_str = inp
-        x = ''.join(self.seafield[0]).find(x_str) - 1
+        x = ''.join(self.seafield[0]).find(x_str.upper()) - 1
         try:
             y = int(''.join(y_str))
             if x == -1 or x == 0 or y == 0:
@@ -81,8 +81,8 @@ class Field:
         return x, y
 
     def setup(self):
+        player_ships = []
         for ship_type, count in self.ships.items():
-            player_ships = []
             for i in range(count):
                 while True:
                     position = self.get_position(ship_type)
@@ -100,7 +100,8 @@ class Field:
                             else:
                                 for j in range(ship_type):
                                     self.seafield[y][x + j] = '█'
-                                player_ships.append(Ships(ship_type, (x, y), False))
+                                player_ships.append(Ships(ship_type, (x, y), True))
+                                print(player_ships[len(player_ships) - 1])
                                 self.draw()
                                 break
                         else:
@@ -112,13 +113,37 @@ class Field:
                                 for j in range(ship_type):
                                     self.seafield[y + j][x] = '█'
                                 player_ships.append(Ships(ship_type, (x, y), False))
+                                print(player_ships[len(player_ships) - 1])
                                 self.draw()
                                 break
                     else:
                         print(f'Введенные координаты находятся за пределами поля сражения {self.size_x}x{self.size_y}. Попробуйте ещё раз')
         return player_ships
-    # def setup_comp(self):
 
+    def fast_setup(self, shift=0):
+        player_ships = []
+        player_ships.append(Ships(length=4, position=(1, 1), hor_direction=False, sunken=False))
+        player_ships.append(Ships(length=3, position=(1, 6), hor_direction=False, sunken=False))
+        player_ships.append(Ships(length=3, position=(3, 3), hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=2, position=(3, 1), hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=2, position=(2, 10), hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=2, position=(6, 9), hor_direction=False, sunken=False))
+        player_ships.append(Ships(length=1, position=(8, 2), hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=1, position=(10, 8), hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=1, position=(4, 5), hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=1, position=(3, 7), hor_direction=True, sunken=False))
+        for ship in player_ships:
+            x, y = ship.position
+            length = ship.length
+            if ship.hor_direction:
+                for j in range(length):
+                    self.seafield[y][x + j + shift] = '█'
+                    # print(x, y, length, True)
+            else:
+                for j in range(length):
+                    # print(x, y, length, False)
+                    self.seafield[y + j][x + shift] = '█'
+        return player_ships
 
 
 class Ships:
@@ -132,6 +157,9 @@ class Ships:
         self.position = position
         self.hor_direction = hor_direction
         self.sunken = sunken
+
+    def __str__(self):
+        return f'Ship length={self.length}, position={self.position}, hor_direction={self.hor_direction}, sunken={self.sunken}'
 
 
 class Shoot:
