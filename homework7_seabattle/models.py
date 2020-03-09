@@ -10,7 +10,7 @@ class Players:
     Defines player object and its properties.
     """
 
-    def __init__(self, name, queue=0):
+    def __init__(self, name='Player', queue=0):
         self.name = name
         self.queue = queue
 
@@ -56,10 +56,29 @@ class Field:
                 print(self.seafield[i][j], end=' | ')
             print()
 
+    def draw_points(self, ship, shift):
+        print(ship)
+        for pos in ship.position:
+            print(pos)
+            x, y = pos
+            for i in range(y - 1, y + 2):
+                for j in range(x - 1, x + 2):
+                    try:
+                        print(j, i)
+                        if self.seafield[i][j + shift] == ' ':
+                            self.seafield[i][j + shift] = '*'
+                        else:
+                            raise IndexError
+                    except IndexError:
+                        continue
+        return True
+
     def check_neighbours(self, x, y):
         try:
             for i in range(y - 1, y + 1):
-                for j in range(x - 1, x + 1):
+                for j in range(x - 1, x + 2):
+                    if j > self.size_x and self.seafield[i][j] != '          ':
+                        return False
                     if self.seafield[i][j] == '█' or self.seafield[i][j] == '*':
                         return False
         except IndexError:
@@ -67,13 +86,16 @@ class Field:
             return False
         return True
 
-    def get_position(self, ship):
-        inp = input(f'Введите через пробел координаты начала для {ship}-x палубного корабля, например Д7: ')
-        x_str, *y_str = inp
-        x = ''.join(self.seafield[0]).find(x_str.upper()) - 1
+    def get_position(self, ship=0):
+        if ship == 0:
+            inp = input('Введите координаты цели, например Д7: ')
+        else:
+            inp = input(f'Введите координаты начала для {ship}-x палубного корабля, например Д7: ')
         try:
+            x_str, *y_str = inp
+            x = ''.join(self.seafield[0]).find(x_str.upper()) - 1
             y = int(''.join(y_str))
-            if x == -1 or x == 0 or y == 0:
+            if x < 1 or y < 1:
                 raise ValueError
         except ValueError:
             print('Введите корректные координаты.')
@@ -85,6 +107,7 @@ class Field:
         for ship_type, count in self.ships.items():
             for i in range(count):
                 while True:
+                    ship_position = []
                     position = self.get_position(ship_type)
                     if not position:
                         continue
@@ -98,9 +121,11 @@ class Field:
                                     print(f'Невозможно установить корабль по этим координатам.')
                                     break
                             else:
+
                                 for j in range(ship_type):
                                     self.seafield[y][x + j] = '█'
-                                player_ships.append(Ships(ship_type, (x, y), True))
+                                    ship_position.append((x + j, y))
+                                player_ships.append(Ships(ship_type, ship_position, True))
                                 print(player_ships[len(player_ships) - 1])
                                 self.draw()
                                 break
@@ -112,7 +137,8 @@ class Field:
                             else:
                                 for j in range(ship_type):
                                     self.seafield[y + j][x] = '█'
-                                player_ships.append(Ships(ship_type, (x, y), False))
+                                    ship_position.append((x, y + j))
+                                player_ships.append(Ships(ship_type, ship_position, False))
                                 print(player_ships[len(player_ships) - 1])
                                 self.draw()
                                 break
@@ -122,27 +148,19 @@ class Field:
 
     def fast_setup(self, shift=0):
         player_ships = []
-        player_ships.append(Ships(length=4, position=(1, 1), hor_direction=False, sunken=False))
-        player_ships.append(Ships(length=3, position=(1, 6), hor_direction=False, sunken=False))
-        player_ships.append(Ships(length=3, position=(3, 3), hor_direction=True, sunken=False))
-        player_ships.append(Ships(length=2, position=(3, 1), hor_direction=True, sunken=False))
-        player_ships.append(Ships(length=2, position=(2, 10), hor_direction=True, sunken=False))
-        player_ships.append(Ships(length=2, position=(6, 9), hor_direction=False, sunken=False))
-        player_ships.append(Ships(length=1, position=(8, 2), hor_direction=True, sunken=False))
-        player_ships.append(Ships(length=1, position=(10, 8), hor_direction=True, sunken=False))
-        player_ships.append(Ships(length=1, position=(4, 5), hor_direction=True, sunken=False))
-        player_ships.append(Ships(length=1, position=(3, 7), hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=4, position=[(1, 1), (1, 2), (1, 3), (1, 4)], hor_direction=False, sunken=False))
+        player_ships.append(Ships(length=3, position=[(1, 6), (1, 7), (1, 8)], hor_direction=False, sunken=False))
+        player_ships.append(Ships(length=3, position=[(3, 3), (4, 3), (5, 3)], hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=2, position=[(3, 1), (4, 1)], hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=2, position=[(2, 10), (3, 10)], hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=2, position=[(6, 9), (6, 10)], hor_direction=False, sunken=False))
+        player_ships.append(Ships(length=1, position=[(8, 2)], hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=1, position=[(10, 8)], hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=1, position=[(4, 5)], hor_direction=True, sunken=False))
+        player_ships.append(Ships(length=1, position=[(3, 7)], hor_direction=True, sunken=False))
         for ship in player_ships:
-            x, y = ship.position
-            length = ship.length
-            if ship.hor_direction:
-                for j in range(length):
-                    self.seafield[y][x + j + shift] = '█'
-                    # print(x, y, length, True)
-            else:
-                for j in range(length):
-                    # print(x, y, length, False)
-                    self.seafield[y + j][x + shift] = '█'
+            for point in ship.position:
+                self.seafield[point[1]][point[0] + shift] = ' ' if shift else '█'
         return player_ships
 
 
@@ -150,7 +168,7 @@ class Ships:
     """
     Defines ship object and its properties.
     """
-    default_position = (0, 0)
+    default_position = [(0, 0)]
 
     def __init__(self, length=1, position=default_position, hor_direction=False, sunken=False):
         self.length = length
@@ -168,10 +186,13 @@ class Shoot:
     """
     default_position = (0, 0)
 
-    def __init__(self, player, position=default_position, miss=True):
+    def __init__(self, player, position=default_position, success=False):
         self.player = player
         self.position = position
-        self.miss = miss
+        self.success = success
+
+    def __str__(self):
+        return f'Игрок {self.player.name} выстрелил в цель {self.position} - {self.success}.'
 
 
 class Storage:
