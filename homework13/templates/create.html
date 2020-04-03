@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create guest message</title>
+</head>
+<body>
+<p>Создайте новую запись!</p>
+<form method="POST" action="{{ url_for('create') }}">
+        <p>Автор
+        <input name="author" id="author" label="Автор">
+        </p>
+        <p>Сообщение <input name="message" id="message">
+        </p>
+        <input type="submit" class="btn">
+</form>
+</body>
+</html>

@@ -1,0 +1,8 @@
+Посты в гостевой книге:
+{% for item in messages %}
+    Автор: {{ item.author }}
+    Дата: {{ item.date_created }}
+    Текст: {{ item.message }}
+    Видимое: {{ item.is_visible }}
+{% endfor %}
+Конец постов
